@@ -62,7 +62,7 @@ pipeline {
 
             stage('Deploy Updated Image to Cluster'){
                 steps {
-                    catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                  withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
                     sh 'sudo kubectl apply -f ./deployments/deployment.yml'
 					sh 'sudo kubectl apply -f ./deployments/load-balancer.yml'
                 }
