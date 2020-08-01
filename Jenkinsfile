@@ -39,7 +39,7 @@ pipeline {
                   steps {
                   withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
                  sh '''
-                        aws eks --region ap-south-1 update-kubeconfig --name capstone-cloud-devops-cluster
+                        aws eks --region ap-south-1 update-kubeconfig --name capstone-project-udacity
                     '''
         }
 
