@@ -55,26 +55,4 @@
                 mode: +x
           when: "local_binaries.stdout.find('kubectl') == -1"
         # ensure that only one cluster exists at a time
-        - name: Get existing cluster
-          command: eksctl get clusters
-          register: existing_clusters
-          become: no
-        - debug: msg=" {{ existing_clusters.stdout }}"
-        - name: Setup K8s-cluster with eksctl
-          block:
-            - name: Setup clusters on 2 nodes
-              command: >
-                eksctl create cluster
-                --name capstone-project-udacity
-                --version {{ kubernetes_version }}
-                --region ap-southeast-2
-                --nodegroup-name worker-node
-                --node-type t2.micro
-                --nodes 2
-                --nodes-min 1
-                --nodes-max 2
-                --node-ami auto
-              become: no
-            - name: Update kubeconfig
-              command: aws eks --region ap-southeast-2 update-kubeconfig --name capstone-project-udacity
-          when: "existing_clusters.stdout.find('No clusters found') != -1"
+      
