@@ -1,0 +1,23 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: capstone-project-udacity
+  labels:
+    app: capstone-project-udacity
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 2
+  selector:
+    matchLabels:
+      app: capstone-project-udacity
+  template:
+    metadata:
+      labels:
+        app: capstone-project-udacity
+    spec:
+      containers:
+        - name: capstone-project-udacity
+          image: somitrasr/capstone-project-udacity:16
+          ports:
+            - containerPort: 80
