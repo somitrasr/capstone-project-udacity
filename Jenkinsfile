@@ -1,76 +1,106 @@
 pipeline {
-    environment {
-        registry = "somitrasr/capstone-project-udacity"
-        registryCredential = 'dockerhub'
-        dockerImage = ''
+  agent any
+  stages {
+    stage('Lint HTML') {
+      steps {
+        sh 'tidy -q -e *.html'
+      }
     }
-    agent any
-    stages {
 
-		    stage('Lint HTML') {
-			    steps {
-				    sh 'tidy -q -e *.html'
-				    sh 'echo $USER'
-			    }
-		    }
-        
-    
-            stage('Building image') {
-                steps{
-                script {
-                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
-                    }
-                }
-            }
-
-            stage('Deploy Image') {
-                steps{
-                script {
-                    docker.withRegistry( '', registryCredential ) {
-                    dockerImage.push()
-                        }
-                    }
-                }
-            }
-
-          
-
-             stage('Create cluster configuration') {
-                  steps {
-                  withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
-                 sh '''
-                        aws eks --region ap-south-1 update-kubeconfig --name capstone-project-udacity
+    stage('Build Docker Image') {
+      steps {
+        withCredentials(bindings: [[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]) {
+          sh '''
+                        docker build -t somitrasr/capstone-devops .
                     '''
         }
 
       }
     }
 
-            stage('Set kubectl context') {
-            steps {
-            withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
-            sh '''
-                     /home/ubuntu/bin/kubectl config use-context arn:aws:eks:ap-south-1:891377212219:cluster/capstone-project-udacity
+    stage('Push Image To Dockerhub') {
+      steps {
+        withCredentials(bindings: [[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]) {
+          sh '''
+                        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                        docker push somitrasr/capstone-devops
                     '''
         }
 
       }
     }
 
-
-
-
-            stage('Deploy Updated Image to Cluster'){
-                steps {
-                  withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
-                    sh 'sudo kubectl apply -f ./deployments/deployment.yml'
-					sh 'sudo kubectl apply -f ./deployments/load-balancer.yml'
-                }
-            }
+    stage('Create cluster configuration') {
+      steps {
+        withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
+          sh '''
+                        aws eks --region ap-south-1 update-kubeconfig --name capstone-cloud-devops-cluster
+                    '''
         }
+
+      }
     }
+
+    stage('Set kubectl context') {
+      steps {
+        withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
+          sh '''
+                     /home/ubuntu/bin/kubectl config use-context arn:aws:eks:ap-south-1:891377212219:cluster/capstone-cloud-devops-cluster
+                    '''
+        }
+
+      }
+    }
+
+    stage('Deploy blue container') {
+      steps {
+        withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
+          sh '''
+                       /home/ubuntu/bin/kubectl apply -f ./blue-controller.yml
+                    '''
+        }
+
+      }
+    }
+
+    stage('Deploy green container') {
+      steps {
+        withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
+          sh '''
+                        /home/ubuntu/bin/kubectl apply -f ./green-controller.yml
+                    '''
+        }
+
+      }
+    }
+
+    stage('Create service in cluster, redirect to green') {
+      steps {
+        withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
+          sh '''
+                        /home/ubuntu/bin/kubectl apply -f green-service.yml
+                    '''
+        }
+
+      }
+    }
+
+    stage('Wait user approve') {
+      steps {
+        input 'The service will redict to blue...'
+      }
+    }
+
+    stage('Create service in cluster, redirect to blue') {
+      steps {
+        withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
+          sh '''
+                        /home/ubuntu/bin/kubectl apply -f blue-service.yml
+                    '''
+        }
+
+      }
+    }
+
+  }
 }
-
-
-
-
