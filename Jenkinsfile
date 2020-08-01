@@ -11,7 +11,7 @@ pipeline {
       steps {
         withCredentials(bindings: [[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]) {
           sh '''
-                        docker build -t somitrasr/capstone-devops .
+                        docker build -t somitrasr/capstone-project-udacity .
                     '''
         }
 
@@ -23,7 +23,7 @@ pipeline {
         withCredentials(bindings: [[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD']]) {
           sh '''
                         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                        docker push somitrasr/capstone-devops
+                        docker push somitrasr/capstone-project-udacity
                     '''
         }
 
@@ -34,7 +34,7 @@ pipeline {
       steps {
         withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
           sh '''
-                        aws eks --region ap-south-1 update-kubeconfig --name capstone-cloud-devops-cluster
+                        aws eks --region ap-south-1 update-kubeconfig --name capstone-project-udacity
                     '''
         }
 
@@ -45,7 +45,7 @@ pipeline {
       steps {
         withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
           sh '''
-                     /home/ubuntu/bin/kubectl config use-context arn:aws:eks:ap-south-1:891377212219:cluster/capstone-cloud-devops-cluster
+                     /home/ubuntu/bin/kubectl config use-context arn:aws:eks:ap-south-1:891377212219:cluster/capstone-project-udacity
                     '''
         }
 
@@ -104,3 +104,6 @@ pipeline {
 
   }
 }
+
+
+

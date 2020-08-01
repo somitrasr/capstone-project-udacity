@@ -1,5 +1,5 @@
 eksctl create cluster \
---name capstone-cloud-devops-cluster \
+--name capstone-project-udacity \
 --version 1.16 \
 --nodegroup-name standard-workers \
 --node-type t2.micro \

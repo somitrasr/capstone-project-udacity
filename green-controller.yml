@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: green
-          image: somitrasr/capstone-devops
+          image: somitrasr/capstone-project-udacity
           ports:
             - name: http-server
               containerPort: 80
