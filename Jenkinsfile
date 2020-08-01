@@ -33,13 +33,33 @@ pipeline {
                 }
             }
 
-            stage('Configure and Build Kubernetes Cluster'){
+          
+
+             stage('Create cluster configuration') {
+                  steps {
+                  withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
+                 sh '''
+                        aws eks --region ap-south-1 update-kubeconfig --name capstone-cloud-devops-cluster
+                    '''
+        }
+
+      }
+    }
+
+            stage('Set kubectl context') {
             steps {
-                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                    sh 'ansible-playbook ./playbooks/create-cluster.yml'
-                    }
-                }
-            }
+            withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
+            sh '''
+                     /home/ubuntu/bin/kubectl config use-context arn:aws:eks:ap-south-1:891377212219:cluster/capstone-cloud-devops-cluster
+                    '''
+        }
+
+      }
+    }
+
+
+
+
             stage('Deploy Updated Image to Cluster'){
                 steps {
                     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
@@ -50,3 +70,7 @@ pipeline {
         }
     }
 }
+
+
+
+
