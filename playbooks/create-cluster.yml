@@ -67,7 +67,7 @@
                 eksctl create cluster
                 --name capstone-project-udacity
                 --version {{ kubernetes_version }}
-                --region ap-south-1
+                --region ap-southeast-2
                 --nodegroup-name worker-node
                 --node-type t2.micro
                 --nodes 2
@@ -76,5 +76,5 @@
                 --node-ami auto
               become: no
             - name: Update kubeconfig
-              command: aws eks --region ap-south-1 update-kubeconfig --name capstone-project-udacity
+              command: aws eks --region ap-southeast-2 update-kubeconfig --name capstone-project-udacity
           when: "existing_clusters.stdout.find('No clusters found') != -1"
