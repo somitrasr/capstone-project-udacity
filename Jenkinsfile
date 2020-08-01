@@ -50,7 +50,7 @@ pipeline {
             steps {
             withAWS(region: 'ap-south-1', credentials: 'aws-devops') {
             sh '''
-                     /home/ubuntu/bin/kubectl config use-context arn:aws:eks:ap-south-1:891377212219:cluster/capstone-cloud-devops-cluster
+                     /home/ubuntu/bin/kubectl config use-context arn:aws:eks:ap-south-1:891377212219:cluster/capstone-project-udacity
                     '''
         }
 
